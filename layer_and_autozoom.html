@@ -1,0 +1,102 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+     <title>deneme</title>
+  
+  <p>iconun ??ine gel!</p>
+  <img src="http://www.openlayers.org/dev/img/marker.png" name="icon" onMouseOver="document.images['icon'].src='tcharita.jpg'"
+onMouseOut="document.images['icon'].src='http://www.openlayers.org/dev/img/marker.png'" width="95" height="50" />  
+
+    <script src="http://openlayers.org/api/OpenLayers.js"></script>
+	
+        <div style="width:50%; height:50%" id="map"></div>
+		
+		<script defer="defer" type="text/javascript">
+        var map = null;
+		var layer,velayer;
+		
+		var map, layer, velayer;  
+		
+        var extent = new OpenLayers.Bounds(27, 44, 42, 33);   //odak noktası belirleme 
+ 
+        function init() {
+            var options = {
+                restrictedExtent: extent
+            }
+            map = new OpenLayers.Map('map', options);   
+ 
+            var wms = new OpenLayers.Layer.WMS(     
+                "OpenLayers WMS", 
+                "http://vmap0.tiles.osgeo.org/wms/vmap0?",
+                {layers: 'basic'}
+            );
+    	         
+			var markers = new OpenLayers.Layer.Markers( "Büyükşehirler" );  
+			var markers2 = new OpenLayers.Layer.Markers( "Küçükşehirler" );
+
+			
+            map.addLayers([wms]);
+			map.addLayer(markers);
+			map.addLayer(markers2);
+            map.zoomToExtent(extent);   //türkiye odaklı açılır...
+	    	//map.zoomToMaxExtent(extent);  //world image ye basınca türkiyeye odaklanır....		
+	
+           var size = new OpenLayers.Size(13,13);
+           var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+           var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+           markers2.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(39.8,41),icon));//trabzon
+           markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(33,40),icon.clone()));   //ankara
+		   
+		   markers2.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(26.5,41.2),icon.clone()));  //edirne
+		   
+		   markers.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(31,37),icon.clone()));    //antalya 
+		   markers2.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(26.4,40),icon.clone()));    // çanakkale
+		   
+		   
+		   
+
+           marker = new OpenLayers.Marker(new OpenLayers.LonLat(28.8,41.2),icon.clone());    //istanbul
+           marker.setOpacity(2);     //opaklık
+           marker.events.register('mousedown', marker, function(evt) { alert("İSTANBUL"); OpenLayers.Event.stop(evt); });  //mouse event 
+		   
+           
+		   
+		   markers.addMarker(marker); 
+           map.addControl(new OpenLayers.Control.LayerSwitcher());  //seçim(kontrol  paneline eklemek için)... Bu olaya kaplama ekleme diyebiliriz.
+           
+		   markers2.addMarker(marker);             
+           map.addControl(new OpenLayers.Control.LayerSwitcher());    
+           
+	     
+            //bu ara kısım değiştiriecek
+        		 yahooLayer = new OpenLayers.Layer.Yahoo( "Yahoo");  //yahoo yu layer lere eklemek için
+                 map.addLayer(yahooLayer);                                  //yahoo şu anda düzgün çalışmyor!
+                 map.addControl(new OpenLayers.Control.LayerSwitcher());
+           //buraya kadar...
+		
+		
+           document.getElementById("toggle").checked = true;
+        
+		}
+         function toggleRestrictedExtent() {
+            if(map.restrictedExtent == null) {
+                map.setOptions({restrictedExtent: extent});
+            } else {
+                map.setOptions({restrictedExtent: null});
+            }
+        }        
+       
+   </script>
+  
+  </head>
+  
+  <body onload="init()">
+  </body>
+   
+
+
+
+
+</html>
