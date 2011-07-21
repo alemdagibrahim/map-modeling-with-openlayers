@@ -5,21 +5,21 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
      <title>deneme</title>
   
-  <p>iconun ??ine gel!</p>
+  <p>iconun üzerine gel!</p>
   <img src="http://www.openlayers.org/dev/img/marker.png" name="icon" onMouseOver="document.images['icon'].src='tcharita.jpg'"
 onMouseOut="document.images['icon'].src='http://www.openlayers.org/dev/img/marker.png'" width="95" height="50" />  
 
     <script src="http://openlayers.org/api/OpenLayers.js"></script>
-	
+	 <script src='http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.1'></script> 
         <div style="width:50%; height:50%" id="map"></div>
 		
 		<script defer="defer" type="text/javascript">
         var map = null;
-		var layer,velayer;
 		
-		var map, layer, velayer;  
 		
-        var extent = new OpenLayers.Bounds(27, 44, 42, 33);   //odak noktası belirleme 
+		var map, layer, velayer ,drawControls;  
+		
+        var extent = new OpenLayers.Bounds(25, 30, 45, 50);   //odak noktası belirleme 
  
         function init() {
             var options = {
@@ -32,13 +32,50 @@ onMouseOut="document.images['icon'].src='http://www.openlayers.org/dev/img/marke
                 "http://vmap0.tiles.osgeo.org/wms/vmap0?",
                 {layers: 'basic'}
             );
-    	         
+			 
+              
+			var veaer = new OpenLayers.Layer.VirtualEarth(
+             "Virtual Earth Aerial",
+            {'type': VEMapStyle.Aerial, sphericalMercator: false}
+             );  	 
+				          
+			var pointLayer = new OpenLayers.Layer.Vector("Üniversiteler");
+            var pointLayer2 = new OpenLayers.Layer.Vector("Yüksekokullar");	
+			var pointLayer3 = new OpenLayers.Layer.Vector("Liseler");
+            var pointLayer4 = new OpenLayers.Layer.Vector("İlkokullar");				
+			
 			var markers = new OpenLayers.Layer.Markers( "Büyükşehirler" );  
 			var markers2 = new OpenLayers.Layer.Markers( "Küçükşehirler" );
 
 			
-            map.addLayers([wms]);
-			map.addLayer(markers);
+			
+            map.addLayers([wms, veaer, pointLayer, pointLayer2, pointLayer3, pointLayer4]);
+			map.addControl(new OpenLayers.Control.LayerSwitcher());
+            map.addControl(new OpenLayers.Control.MousePosition());
+			
+			drawControls = {
+                    point: new OpenLayers.Control.DrawFeature(pointLayer,
+                                OpenLayers.Handler.Point),
+								
+					point2: new OpenLayers.Control.DrawFeature(pointLayer2,
+                                OpenLayers.Handler.Point),
+								
+					point3: new OpenLayers.Control.DrawFeature(pointLayer3,
+                                OpenLayers.Handler.Point),
+
+					point4: new OpenLayers.Control.DrawFeature(pointLayer4,
+                                OpenLayers.Handler.Point)			
+					
+                };
+				
+ 
+            for(var key in drawControls) {
+                map.addControl(drawControls[key]);
+            }
+			
+			
+					
+     		map.addLayer(markers);
 			map.addLayer(markers2);
             map.zoomToExtent(extent);   //türkiye odaklı açılır...
 	    	//map.zoomToMaxExtent(extent);  //world image ye basınca türkiyeye odaklanır....		
@@ -68,16 +105,12 @@ onMouseOut="document.images['icon'].src='http://www.openlayers.org/dev/img/marke
            
 		   markers2.addMarker(marker);             
            map.addControl(new OpenLayers.Control.LayerSwitcher());    
-           
-	     
-            //bu ara kısım değiştiriecek
-        		 yahooLayer = new OpenLayers.Layer.Yahoo( "Yahoo");  //yahoo yu layer lere eklemek için
-                 map.addLayer(yahooLayer);                                  //yahoo şu anda düzgün çalışmyor!
-                 map.addControl(new OpenLayers.Control.LayerSwitcher());
-           //buraya kadar...
-		
-		
-           document.getElementById("toggle").checked = true;
+    	
+            document.getElementById("toggle").checked = true;
+			
+			
+          map.setCenter(new OpenLayers.LonLat(0, 0), 1);
+		  document.getElementById('noneToggle').checked = true;
         
 		}
          function toggleRestrictedExtent() {
@@ -86,17 +119,62 @@ onMouseOut="document.images['icon'].src='http://www.openlayers.org/dev/img/marke
             } else {
                 map.setOptions({restrictedExtent: null});
             }
-        }        
+        }
+        function toggleControl(element) {
+                for(key in drawControls) {
+                    var control = drawControls[key];
+                    if(element.value == key && element.checked) {
+                        control.activate();
+                    } else {
+                        control.deactivate();
+                    }
+                }
+            }
+ 
+            function allowPan(element) {
+                var stop = !element.checked;
+                for(var key in drawControls) {
+                    drawControls[key].handler.stopDown = stop;
+                    drawControls[key].handler.stopUp = stop;
+                }
+            }       
        
    </script>
   
   </head>
   
-  <body onload="init()">
-  </body>
-   
-
-
-
-
+  <body onload="init()"> 
+        <h1 id="title">Tarihi katman eklentisi</h1> 
+ 
+        <div id="map" class="smallmap"></div> 
+    
+        <ul id="controlToggle"> 
+            <li> 
+                <input type="radio" name="type" value="none" id="noneToggle"
+                       onclick="toggleControl(this);" checked="checked" /> 
+                <label for="noneToggle">İşaretleyiciyi bırak</label> 
+            </li> 
+            <li> 
+                <input type="radio" name="type" value="point" id="pointToggle" onclick="toggleControl(this);" /> 
+                <label for="pointToggle">Üniversiteler</label> 
+            </li> 
+			
+			<li> 
+                <input type="radio" name="type" value="point2" id="pointToggle" onclick="toggleControl(this);" /> 
+                <label for="pointToggle">Yüksekokullar</label> 
+            </li> 
+			
+			<li> 
+                <input type="radio" name="type" value="point3" id="pointToggle" onclick="toggleControl(this);" /> 
+                <label for="pointToggle">Liseler</label> 
+            </li> 
+			
+			<li> 
+                <input type="radio" name="type" value="point4" id="pointToggle" onclick="toggleControl(this);" /> 
+                <label for="pointToggle">İlkokullar</label> 
+            </li> 
+         
+        </ul> 
+ 
+    </body> 
 </html>
